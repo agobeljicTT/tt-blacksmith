@@ -21,11 +21,16 @@ from blacksmith.experiments.torch.mnist.tensor_parallel.utils import cross_entro
 
 
 def validate(
-    model: torch.nn.Module, val_loader: DataLoader, device: torch.device, logger: TrainingLogger, config: TrainingConfig
+    model: torch.nn.Module,
+    val_loader: DataLoader,
+    device_manager: DeviceManager,
+    logger: TrainingLogger,
+    config: TrainingConfig,
 ) -> Tuple[float, float]:
     logger.info("Starting validation...")
 
     model.eval()
+    device_manager.shard_model(model)
     total_loss = 0.0
     total_samples = 0
     correct = 0
@@ -35,18 +40,17 @@ def validate(
             inputs = inputs.view(inputs.size(0), -1)
             targets = targets.view(targets.size(0), -1)
 
-            inputs = inputs.to(device)
-            targets = targets.to(device)
+            batch = device_manager.prepare_batch({"inputs": inputs, "targets": targets})
 
             # Forward pass
-            outputs = model(inputs)
+            outputs = model(batch["inputs"])
 
             # Compute loss
-            loss = cross_entropy_loss(outputs, targets)
+            loss = cross_entropy_loss(outputs, batch["targets"])
             total_loss += loss.item() * inputs.size(0)
 
             preds = torch.argmax(outputs, dim=1)
-            labels = torch.argmax(targets, dim=1)
+            labels = torch.argmax(batch["targets"], dim=1)
             correct += (preds == labels).sum().item()
             total_samples += inputs.size(0)
 
@@ -67,6 +71,7 @@ def train(
     # Build model
     model = MNISTLinear(config.input_size, config.hidden_size, config.output_size, bias=config.bias)
     model = model.to(device_manager.device)
+
     logger.info(f"Loaded {config.model_name} model.")
     logger.info(f"Model parameters: {sum(p.numel() for p in model.parameters())}")
     logger.info(f"Trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
@@ -93,9 +98,7 @@ def train(
         for epoch in range(config.num_epochs):
             logger.info(f"Starting epoch {epoch + 1}/{config.num_epochs}")
             for inputs, targets in train_loader:
-                # Apply tensor parallel sharding
                 device_manager.shard_model(model)
-
                 batch = {"inputs": inputs.view(inputs.size(0), -1), "targets": targets.view(targets.size(0), -1)}
                 batch = device_manager.prepare_batch(batch)
 
@@ -105,11 +108,8 @@ def train(
                 # Forward pass
                 outputs = model(batch["inputs"])
 
-                # Mark sharding for tensor parallelism
-                outputs = device_manager.shard_tensor(outputs, (None, None))
-
                 # Compute loss
-                loss = cross_entropy_loss(outputs, targets)
+                loss = cross_entropy_loss(outputs, batch["targets"])
                 loss.backward()
                 running_loss += loss.item()
 
@@ -124,7 +124,7 @@ def train(
                     running_loss = 0.0
 
                     # Run validation and log metrics
-                    val_loss, val_acc = validate(model, val_loader, device_manager.device, logger, config)
+                    val_loss, val_acc = validate(model, val_loader, device_manager, logger, config)
                     logger.log_metrics(
                         {"train/loss": avg_loss, "val/loss": val_loss, "val/accuracy": val_acc}, step=global_step
                     )

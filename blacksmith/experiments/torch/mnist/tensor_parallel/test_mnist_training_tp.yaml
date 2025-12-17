@@ -53,12 +53,11 @@ remote_path: ""
 
 # Device settings
 parallelism_strategy: "tensor_parallel"
-mesh_shape: "2,1"
-tp_sharding_specs: {
-    "linear_relu_stack.0": (None, "model"),
-    "linear_relu_stack.2": ("model", None),
-    "linear_relu_stack.4": (None, "model"),
-}
+mesh_shape: "1,2"
+tp_sharding_specs:
+    linear_relu_stack.0.weight: [null, "model"]
+    linear_relu_stack.2.weight: ["model", null]
+    linear_relu_stack.4.weight: [null, "model"]
 
 # Other settings
 device: "TT"
