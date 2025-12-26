@@ -11,49 +11,17 @@ The experiment is designed to run on the Huggingface framework.
 
 ## Training
 
-The experiment supports different hardware configurations with pre-configured YAML files:
+The experiment supports different hardware configurations with per-model training setups.
 
-### Single Chip Training
-For single chip (no parallelism):
-```bash
-python3 blacksmith/experiments/torch/llama/xla/test_llama_fine_tuning_pure_torch.py --config blacksmith/experiments/torch/llama/xla/lora/single_chip/test_llama_1b.yaml
-```
+### Mesh and Sharding Configuration
 
-### QuietBox Training
-For QuietBox systems with data + model parallelism:
-```bash
-python3 blacksmith/experiments/torch/llama/xla/test_llama_fine_tuning_pure_torch.py --config blacksmith/experiments/torch/llama/xla/lora/quietbox/test_llama_1b.yaml
-```
+Mesh configurations define the parallelism strategy. The `mesh_axis_names` can be either `["data", "model"]` or `["model", "data"]` depending on which dimension corresponds to which type of parallelism.
 
-### Galaxy Training
-For Galaxy systems with data + model parallelism:
-```bash
-python3 blacksmith/experiments/torch/llama/xla/test_llama_fine_tuning_pure_torch.py --config blacksmith/experiments/torch/llama/xla/lora/galaxy/test_llama_1b.yaml
-```
-
-## Mesh and Sharding Configuration
-
-The experiment supports different parallelism strategies through mesh configurations:
-
-### Mesh Shape Configuration
-- **Single Chip**: No mesh configuration needed (runs on single device)
-- **QuietBox**: `mesh_shape: [2, 4]` with `mesh_axis_names: ["data", "model"]`
-- **Galaxy**: `mesh_shape: [8, 4]` with `mesh_axis_names: ["model", "data"]`
-
-### Custom Mesh Configuration
-You can customize the mesh and sharding patterns in the YAML configuration files:
-
-1. **Mesh Shape**: Modify `mesh_shape` to define the device grid dimensions
-2. **Axis Names**: Adjust `mesh_axis_names` to specify parallelism types (`["data", "model"]` or `["model", "data"]`)
-3. **Sharding Patterns**: Configure `model_sharding_patterns` to control how model parameters are distributed across devices
-
-Example mesh configuration:
+Example mesh configuration in YAML:
 ```yaml
-# Device settings
 mesh_shape: [2, 4]  # 2 data parallel, 4 model parallel
 mesh_axis_names: ["data", "model"]
 
-# Sharding patterns for tensor parallelism
 model_sharding_patterns:
   - ['\.self_attn\.q_proj\.base_layer$',      ["model", null]]
   - ['\.self_attn\.v_proj\.base_layer$',      ["model", null]]
@@ -62,6 +30,48 @@ model_sharding_patterns:
   - ['\.mlp\.up_proj$',                       ["model", null]]
   - ['\.mlp\.down_proj$',                     [null, "model"]]
 ```
+
+### Llama 1B Training
+
+Llama 1B supports training on all hardware configurations:
+
+**Single Chip Training:**
+```bash
+python3 blacksmith/experiments/torch/llama/xla/test_llama_fine_tuning_pure_torch.py --config blacksmith/experiments/torch/llama/xla/lora/single_chip/test_llama_1b.yaml
+```
+
+**QuietBox Training:**
+```bash
+python3 blacksmith/experiments/torch/llama/xla/test_llama_fine_tuning_pure_torch.py --config blacksmith/experiments/torch/llama/xla/lora/quietbox/test_llama_1b.yaml
+```
+Working mesh shapes: `[1, 8]`, `[8, 1]`, `[2, 4]` (both `mesh_axis_names` orderings supported)
+
+**Galaxy Training:**
+```bash
+python3 blacksmith/experiments/torch/llama/xla/test_llama_fine_tuning_pure_torch.py --config blacksmith/experiments/torch/llama/xla/lora/galaxy/test_llama_1b.yaml
+```
+Working mesh shape: `[8, 4]` (both `mesh_axis_names` orderings supported)
+
+**N300 Training:**
+Working mesh shapes: `[1, 2]`, `[2, 1]` (both `mesh_axis_names` orderings supported)
+
+### Llama 8B Training
+
+**Llama 8B requires multi-chip configurations (not supported on single chip) and must be model sharded (model dimension > 1).**
+
+**QuietBox Training:**
+```bash
+python3 blacksmith/experiments/torch/llama/xla/test_llama_fine_tuning_pure_torch.py --config blacksmith/experiments/torch/llama/xla/lora/quietbox/test_llama_8b.yaml
+```
+Working mesh shapes: `[1, 8]` (data, model), `[8, 1]` (model, data), `[2, 4]` (data, model)
+
+*Note: For meshes with 1 dimension, the 1 must be the data dimension (model dimension must be > 1)*
+
+**Galaxy Training:**
+```bash
+python3 blacksmith/experiments/torch/llama/xla/test_llama_fine_tuning_pure_torch.py --config blacksmith/experiments/torch/llama/xla/lora/galaxy/test_llama_8b.yaml
+```
+Working mesh shape: `[8, 4]` (both `mesh_axis_names` orderings supported)
 
 ## Data
 
