@@ -1,37 +1,53 @@
 # SPDX-FileCopyrightText: (c) 2026 Tenstorrent AI ULC
 #
 # SPDX-License-Identifier: Apache-2.0
+from datasets import load_dataset
+
 import torch
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 
 from torchvision import transforms
-from torchvision.datasets import StanfordCars as stanfordcars_dataset
 
 from blacksmith.datasets.torch.torch_dataset import BaseDataset
 from blacksmith.tools.templates.configs import TrainingConfig
 
 # Constants for ImageNet
+
+# Usually Stanford Cars dataset is used to fine-tune models
+# previously trained on ImageNet, so we use ImageNet statistics
+
 MEAN = [0.485, 0.456, 0.406]
 STD = [0.229, 0.224, 0.225]
-IMG_SIZE = 224  # Size of the center crop for ViT
-NUM_CLASSES = 10
+
+DATASET_PATH = "tanganke/stanford_cars"
 
 
 class StanfordCarsDataset(BaseDataset):
-    def __init__(self, config: TrainingConfig, split="train", collate_fn=None):
+    def __init__(self, config: TrainingConfig, split: str = "train", collate_fn=None):
+        """
+        Args:
+            config: TrainingConfig (ensure config.dataset_id is set to "stanfordcars")
+            split: Dataset split to use ("train", "test")
+            collate_fn: Unused, will fail if not None
+        """
+        assert split in ["train", "test"], "Split must be one of: train, test"
+        assert collate_fn is None, "collate_fn is not supported for this dataset"
+
         self.config = config
         self.split = split
         self.collate_fn = collate_fn
 
         self._prepare_dataset()
 
-    def _prepare_dataset(self):
+    def _get_transform_function(self):
         dtype = eval(self.config.dtype)
+        img_size_before_crop = self.config.img_size_before_crop
+        img_size = self.config.img_size
 
-        transform = transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(IMG_SIZE),  # Center crop to 224x224 for ViT
+        img_transform = transforms.Compose([
+            transforms.Resize(img_size_before_crop),
+            transforms.CenterCrop(img_size),  # Center crop to 224x224 for ViT
             transforms.ToTensor(),
             transforms.Normalize(  # Normalize to ImageNet statistics
                 mean=MEAN,
@@ -39,20 +55,25 @@ class StanfordCarsDataset(BaseDataset):
             ),
             transforms.Lambda(lambda x: x.to(dtype)),  # Convert to dtype
         ])
-        target_transform = transforms.Compose(
+        label_transform = transforms.Compose(
             [
                 transforms.Lambda(lambda y: torch.tensor(y, dtype=torch.long)),
-                transforms.Lambda(lambda y: F.one_hot(y, num_classes=NUM_CLASSES).to(dtype)),
+                transforms.Lambda(lambda y: F.one_hot(y, num_classes=self.config.num_classes).to(dtype)),
             ]
         )
+        
+        def transform_function(batch):
+            batch["image"] = [img_transform(img) for img in batch["image"]]
+            batch["label"] = [label_transform(label) for label in batch["label"]]
+            return batch
 
-        self.dataset = mnist_dataset(
-            root="data",
-            train=self.split == "train",
-            download=True,
-            transform=transform,
-            target_transform=target_transform,
-        )
+        return transform_function
+
+    def _prepare_dataset(self):
+        transform_function = self._get_transform_function()
+        raw_dataset = load_dataset(DATASET_PATH, split=self.split)
+
+        self.dataset = raw_dataset.with_transform(transform_function)
 
     def __getitem__(self, idx: int):
         return self.dataset[idx]
