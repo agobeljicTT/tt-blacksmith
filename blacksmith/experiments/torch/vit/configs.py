@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: (c) 2025 Tenstorrent AI ULC
+# SPDX-FileCopyrightText: (c) 2026 Tenstorrent AI ULC
 #
 # SPDX-License-Identifier: Apache-2.0
 from typing import Optional
@@ -7,10 +7,13 @@ from pydantic import BaseModel, Field
 
 class TrainingConfig(BaseModel):
     # Dataset settings
-    dataset_id: str = Field(default="sst2")
+    dataset_id: str = Field(default="stanfordcars") # For dataset_utils.get_dataset()
+    img_size_before_crop: int = Field(default=256, gt=0)
+    img_size: int = Field(default=224, gt=0)
+    num_classes: int = Field(default=196, gt=0)
 
     # Model settings
-    model_name: str = Field(default="microsoft/phi-1")
+    model_name: str = Field(default="google/vit-base-patch16-224")
     max_length: int = Field(default=32, gt=0)
     dtype: str = Field(default="torch.bfloat16")
     ignored_index: int = Field(default=-100)
@@ -25,8 +28,8 @@ class TrainingConfig(BaseModel):
     # Logging settings
     log_level: str = Field(default="INFO")
     use_wandb: bool = Field(default=True)
-    wandb_project: str = Field(default="phi1-finetuning")
-    wandb_run_name: str = Field(default="tt-phi1-sst2")
+    wandb_project: str = Field(default="vit-finetuning")
+    wandb_run_name: str = Field(default="tt-vit-stanfordcars")
     wandb_tags: list[str] = Field(default_factory=lambda: ["test"])
     wandb_watch_mode: str = Field(default="all")
     wandb_log_freq: int = Field(default=1000)
@@ -45,7 +48,7 @@ class TrainingConfig(BaseModel):
     keep_last_n: int = Field(default=3, ge=0)
     keep_best_n: int = Field(default=3, ge=0)
     save_strategy: str = Field(default="epoch")
-    project_dir: str = Field(default="blacksmith/experiments/torch/phi")
+    project_dir: str = Field(default="blacksmith/experiments/torch/vit")
     save_optim: bool = Field(default=False)
     storage_backend: str = Field(default="local")
     sync_to_storage: bool = Field(default=False)
@@ -69,4 +72,4 @@ class TrainingConfig(BaseModel):
 
     # Other settings
     framework: str = Field(default="pytorch")
-    use_tt: bool = Field(default=True)
+    use_tt: bool = Field(default=False) # TODO: Change to True when TT device is available
