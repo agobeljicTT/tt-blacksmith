@@ -11,7 +11,7 @@ dtype: "torch.bfloat16"
 ignored_index: -100
 
 # Training hyperparameters
-learning_rate: 0.001
+learning_rate: 0.01
 batch_size: 8
 gradient_checkpointing: False
 num_epochs: 1
