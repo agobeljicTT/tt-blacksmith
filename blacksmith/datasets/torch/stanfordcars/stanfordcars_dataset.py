@@ -4,7 +4,6 @@
 from datasets import load_dataset
 
 import torch
-from torch.nn import functional as F
 from torch.utils.data import DataLoader
 
 from torchvision import transforms
@@ -36,7 +35,6 @@ class StanfordCarsDataset(BaseDataset):
 
         self.config = config
         self.split = split
-        self.collate_fn = collate_fn
 
         self._prepare_dataset()
 
@@ -45,27 +43,33 @@ class StanfordCarsDataset(BaseDataset):
         img_size_before_crop = self.config.img_size_before_crop
         img_size = self.config.img_size
 
-        img_transform = transforms.Compose([
-            transforms.Lambda(lambda img: img.convert('RGB') if img.mode != 'RGB' else img),  # Looks like there are grayscale images in the dataset
-            transforms.Resize(img_size_before_crop),
-            transforms.CenterCrop(img_size),  # Center crop to 224x224 for ViT
-            transforms.ToTensor(),
-            transforms.Normalize(  # Normalize to ImageNet statistics
-                mean=MEAN,
-                std=STD,
-            ),
-            transforms.Lambda(lambda x: x.to(dtype)),  # Convert to dtype
-        ])
+        img_transform = transforms.Compose(
+            [
+                transforms.Lambda(
+                    lambda img: img.convert("RGB") if img.mode != "RGB" else img
+                ),  # Looks like there are grayscale images in the dataset
+                transforms.Resize(img_size_before_crop),
+                transforms.CenterCrop(img_size),  # Center crop to 224x224 for ViT
+                transforms.ToTensor(),
+                transforms.Normalize(  # Normalize to ImageNet statistics
+                    mean=MEAN,
+                    std=STD,
+                ),
+                transforms.Lambda(lambda x: x.to(dtype)),  # Convert to dtype
+            ]
+        )
         label_transform = transforms.Compose(
             [
                 transforms.Lambda(lambda y: torch.tensor(y, dtype=torch.long)),
             ]
         )
-        
+
         def transform_function(batch):
             transformed_batch = {}
             transformed_batch["image"] = [img_transform(img) for img in batch["image"]]
-            transformed_batch["label"] = [label_transform(label) for label in batch["label"]]
+            transformed_batch["label"] = [
+                label_transform(label) for label in batch["label"]
+            ]
             return transformed_batch
 
         return transform_function
@@ -84,5 +88,8 @@ class StanfordCarsDataset(BaseDataset):
 
     def get_dataloader(self) -> DataLoader:
         return DataLoader(
-            self.dataset, batch_size=self.config.batch_size, shuffle=self.split == "train", drop_last=True
+            self.dataset,
+            batch_size=self.config.batch_size,
+            shuffle=self.split == "train",
+            drop_last=True,
         )
