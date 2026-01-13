@@ -7,6 +7,7 @@ Original ViT paper can be found [here](https://arxiv.org/pdf/2010.11929).
 ## Overview
 
 The ViT fine-tuning experiment applies the full / partial fine-tuning technique to adapt a pre-trained ViT model on the StanfordCars dataset.
+The experiment is designed to run on the Huggingface framework.
 
 ## Training
 

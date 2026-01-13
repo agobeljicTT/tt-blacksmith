@@ -46,26 +46,27 @@ class StanfordCarsDataset(BaseDataset):
         img_size = self.config.img_size
 
         img_transform = transforms.Compose([
+            transforms.Lambda(lambda img: img.convert('RGB') if img.mode != 'RGB' else img),  # Looks like there are grayscale images in the dataset
             transforms.Resize(img_size_before_crop),
             transforms.CenterCrop(img_size),  # Center crop to 224x224 for ViT
             transforms.ToTensor(),
             transforms.Normalize(  # Normalize to ImageNet statistics
                 mean=MEAN,
-                std=STD
+                std=STD,
             ),
             transforms.Lambda(lambda x: x.to(dtype)),  # Convert to dtype
         ])
         label_transform = transforms.Compose(
             [
                 transforms.Lambda(lambda y: torch.tensor(y, dtype=torch.long)),
-                transforms.Lambda(lambda y: F.one_hot(y, num_classes=self.config.num_classes).to(dtype)),
             ]
         )
         
         def transform_function(batch):
-            batch["image"] = [img_transform(img) for img in batch["image"]]
-            batch["label"] = [label_transform(label) for label in batch["label"]]
-            return batch
+            transformed_batch = {}
+            transformed_batch["image"] = [img_transform(img) for img in batch["image"]]
+            transformed_batch["label"] = [label_transform(label) for label in batch["label"]]
+            return transformed_batch
 
         return transform_function
 

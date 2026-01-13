@@ -25,6 +25,9 @@ class TrainingConfig(BaseModel):
     num_epochs: int = Field(default=1, gt=0)
     optim: str = Field(default="adamw_torch")
 
+    # Loss
+    loss_fn: str = Field(default="torch.nn.CrossEntropyLoss")
+
     # Logging settings
     log_level: str = Field(default="INFO")
     use_wandb: bool = Field(default=True)
