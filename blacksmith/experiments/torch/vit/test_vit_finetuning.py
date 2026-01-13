@@ -71,6 +71,14 @@ def train(
         num_labels=config.num_classes,
         ignore_mismatched_sizes=True,
     )
+    # Freeze encoder
+    for param in model.vit.parameters():
+        param.requires_grad = False
+
+    # Unfreeze classifier
+    for param in model.classifier.parameters():
+        param.requires_grad = True
+
     model = model.to(device_manager.device)
     logger.info(f"Loaded {config.model_name} model.")
     logger.info(f"Model parameters: {sum(p.numel() for p in model.parameters())}")
