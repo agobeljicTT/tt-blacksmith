@@ -9,6 +9,7 @@ import torch_xla
 from tqdm import tqdm
 
 from transformers import ViTImageProcessor, ViTForImageClassification
+from peft import LoraConfig, get_peft_model
 
 from blacksmith.experiments.torch.vit.configs import TrainingConfig
 from blacksmith.datasets.torch.dataset_utils import get_dataset
@@ -71,13 +72,15 @@ def train(
         num_labels=config.num_classes,
         ignore_mismatched_sizes=True,
     )
-    # Freeze encoder
-    for param in model.vit.parameters():
-        param.requires_grad = False
+    
+    lora_config = LoraConfig(
+        r=config.lora_r,
+        lora_alpha=config.lora_alpha,
+        target_modules=config.lora_target_modules,
+        task_type=config.lora_task_type,
+    )
 
-    # Unfreeze classifier
-    for param in model.classifier.parameters():
-        param.requires_grad = True
+    model = get_peft_model(model, lora_config)
 
     model = model.to(device_manager.device)
     logger.info(f"Loaded {config.model_name} model.")
