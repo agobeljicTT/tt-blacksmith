@@ -8,7 +8,7 @@ import torch
 import torch_xla
 from tqdm import tqdm
 
-from transformers import ViTImageProcessor, ViTForImageClassification
+from transformers import AutoModelForImageClassification, AutoImageProcessor
 from peft import LoraConfig, get_peft_model
 
 from blacksmith.experiments.torch.vit.configs import TrainingConfig
@@ -54,7 +54,8 @@ def validate(model, val_data_loader, loss_fn, device_manager, config, logger):
 
     avg_val_loss = total_val_loss / num_val_batches if num_val_batches > 0 else 0.0
     accuracy = correct / total_samples if total_samples > 0 else 0.0
-    logger.info(f"Average validation loss: {avg_val_loss}, Accuracy: {accuracy * 100:.2f}%")
+    accuracy = accuracy * 100
+    logger.info(f"Average validation loss: {avg_val_loss}, Accuracy: {accuracy:.2f}%")
     return avg_val_loss
 
 
@@ -67,17 +68,18 @@ def train(
     logger.info("Starting training...")
 
     # Load model
-    model = ViTForImageClassification.from_pretrained(
+    model = AutoModelForImageClassification.from_pretrained(
         config.model_name,
         num_labels=config.num_classes,
         ignore_mismatched_sizes=True,
     )
-    
+    # figure out if needed
+    image_processor = AutoImageProcessor.from_pretrained(config.model_name)
+
     lora_config = LoraConfig(
         r=config.lora_r,
         lora_alpha=config.lora_alpha,
         target_modules=config.lora_target_modules,
-        task_type=config.lora_task_type,
     )
 
     model = get_peft_model(model, lora_config)
@@ -88,9 +90,6 @@ def train(
     logger.info(
         f"Trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}"
     )
-
-    # Load image processor # TODO: Figure out if it is necessary
-    image_processor = ViTImageProcessor.from_pretrained(config.model_name)
 
     # Load checkpoint if needed
     if config.resume_from_checkpoint:

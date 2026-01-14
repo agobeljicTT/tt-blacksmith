@@ -71,7 +71,6 @@ class TrainingConfig(BaseModel):
     lora_r: int = Field(default=4, gt=0)
     lora_alpha: int = Field(default=8, gt=0)
     lora_target_modules: list[str] = Field(default_factory=lambda: ["all-linear"])
-    lora_task_type: str = Field(default="CAUSAL_LM")
 
     # Other settings
     framework: str = Field(default="pytorch")
