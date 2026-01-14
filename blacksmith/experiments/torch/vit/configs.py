@@ -8,8 +8,6 @@ from pydantic import BaseModel, Field
 class TrainingConfig(BaseModel):
     # Dataset settings
     dataset_id: str = Field(default="stanfordcars") # For dataset_utils.get_dataset()
-    img_size_before_crop: int = Field(default=256, gt=0)
-    img_size: int = Field(default=224, gt=0)
     num_classes: int = Field(default=196, gt=0)
 
     # Model settings
@@ -71,6 +69,7 @@ class TrainingConfig(BaseModel):
     lora_r: int = Field(default=4, gt=0)
     lora_alpha: int = Field(default=8, gt=0)
     lora_target_modules: list[str] = Field(default_factory=lambda: ["all-linear"])
+    lora_dropout: float = Field(default=0.1, ge=0, le=1)
 
     # Other settings
     framework: str = Field(default="pytorch")

@@ -1,7 +1,5 @@
 # Dataset settings
 dataset_id: "stanfordcars"
-img_size_before_crop: 256
-img_size: 224
 num_classes: 196
 
 # Model settings
@@ -11,17 +9,17 @@ dtype: "torch.bfloat16"
 ignored_index: -100
 
 # Training hyperparameters
-learning_rate: 6e-5
-batch_size: 8
+learning_rate: 5e-3
+batch_size: 128
 gradient_checkpointing: False
-num_epochs: 3
+num_epochs: 5
 optim: "adamw_torch"
 
 # Logging settings
 log_level: "INFO"
 use_wandb: True
 wandb_project: "vit-finetuning"
-wandb_run_name: "tt-vit-stanfordcars-6e-5-lora-8-16"
+wandb_run_name: "tt-vit-stanfordcars-5e-3-lora-16-16-0.1"
 wandb_tags: ["test"]
 wandb_watch_mode: "all"
 wandb_log_freq: 1000
@@ -54,9 +52,10 @@ deterministic: False
 parallelism_strategy: "single"
 
 # LoRA setup
-lora_r: 8
+lora_r: 16
 lora_alpha: 16
 lora_target_modules: ["query", "value"]
+lora_dropout: 0.1
 
 # Other settings
 framework: "pytorch"

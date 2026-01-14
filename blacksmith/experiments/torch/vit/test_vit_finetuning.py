@@ -80,6 +80,8 @@ def train(
         r=config.lora_r,
         lora_alpha=config.lora_alpha,
         target_modules=config.lora_target_modules,
+        lora_dropout=config.lora_dropout,
+        modules_to_save=["classifier"],
     )
 
     model = get_peft_model(model, lora_config)
@@ -87,8 +89,10 @@ def train(
     model = model.to(device_manager.device)
     logger.info(f"Loaded {config.model_name} model.")
     logger.info(f"Model parameters: {sum(p.numel() for p in model.parameters())}")
+    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    total_params = sum(p.numel() for p in model.parameters())
     logger.info(
-        f"Trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}"
+        f"Trainable parameters: {trainable_params}, Trainable%: {trainable_params / total_params * 100:.2f}%"
     )
 
     # Load checkpoint if needed

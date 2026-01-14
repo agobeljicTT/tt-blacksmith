@@ -8,6 +8,8 @@ from torch.utils.data import DataLoader
 
 from torchvision import transforms
 
+from transformers import ViTImageProcessor
+
 from blacksmith.datasets.torch.torch_dataset import BaseDataset
 from blacksmith.tools.templates.configs import TrainingConfig
 
@@ -15,9 +17,6 @@ from blacksmith.tools.templates.configs import TrainingConfig
 
 # Usually Stanford Cars dataset is used to fine-tune models
 # previously trained on ImageNet, so we use ImageNet statistics
-
-MEAN = [0.485, 0.456, 0.406]
-STD = [0.229, 0.224, 0.225]
 
 DATASET_PATH = "tanganke/stanford_cars"
 
@@ -35,25 +34,24 @@ class StanfordCarsDataset(BaseDataset):
 
         self.config = config
         self.split = split
+        self.image_processor = ViTImageProcessor.from_pretrained(config.model_name)
 
         self._prepare_dataset()
 
     def _get_transform_function(self):
         dtype = eval(self.config.dtype)
-        img_size_before_crop = self.config.img_size_before_crop
-        img_size = self.config.img_size
 
         img_transform = transforms.Compose(
             [
                 transforms.Lambda(
                     lambda img: img.convert("RGB") if img.mode != "RGB" else img
                 ),  # Looks like there are grayscale images in the dataset
-                transforms.Resize(img_size_before_crop),
-                transforms.CenterCrop(img_size),  # Center crop to 224x224 for ViT
+                transforms.RandomResizedCrop(self.image_processor.size["height"]),
+                transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize(  # Normalize to ImageNet statistics
-                    mean=MEAN,
-                    std=STD,
+                    mean=self.image_processor.image_mean,
+                    std=self.image_processor.image_std,
                 ),
                 transforms.Lambda(lambda x: x.to(dtype)),  # Convert to dtype
             ]
