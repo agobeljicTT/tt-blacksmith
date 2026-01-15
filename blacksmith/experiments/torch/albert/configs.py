@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -17,6 +18,7 @@ class TrainingConfig(BaseModel):
     dtype: str = Field(default="torch.bfloat16")
 
     # Training hyperparameters
+    training_type: str = Field(default="lora")  # [lora, adapters]
     learning_rate: float = Field(default=1e-3, gt=0)
     weight_decay: float = Field(default=0.0, ge=0)
     batch_size: int = Field(default=32, gt=0)
