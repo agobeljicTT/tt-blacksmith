@@ -65,9 +65,7 @@ class StanfordCarsDataset(BaseDataset):
         def transform_function(batch):
             transformed_batch = {}
             transformed_batch["image"] = [img_transform(img) for img in batch["image"]]
-            transformed_batch["label"] = [
-                label_transform(label) for label in batch["label"]
-            ]
+            transformed_batch["label"] = [label_transform(label) for label in batch["label"]]
             return transformed_batch
 
         return transform_function

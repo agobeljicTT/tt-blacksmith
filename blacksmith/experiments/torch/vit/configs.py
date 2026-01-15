@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 class TrainingConfig(BaseModel):
     # Dataset settings
-    dataset_id: str = Field(default="stanfordcars") # For dataset_utils.get_dataset()
+    dataset_id: str = Field(default="stanfordcars")  # For dataset_utils.get_dataset()
     num_classes: int = Field(default=196, gt=0)
 
     # Model settings
@@ -73,4 +73,4 @@ class TrainingConfig(BaseModel):
 
     # Other settings
     framework: str = Field(default="pytorch")
-    use_tt: bool = Field(default=False) # TODO: Change to True when TT device is available
+    use_tt: bool = Field(default=False)  # TODO: Change to True when TT device is available

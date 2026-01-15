@@ -91,9 +91,7 @@ def train(
     logger.info(f"Model parameters: {sum(p.numel() for p in model.parameters())}")
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     total_params = sum(p.numel() for p in model.parameters())
-    logger.info(
-        f"Trainable parameters: {trainable_params}, Trainable%: {trainable_params / total_params * 100:.2f}%"
-    )
+    logger.info(f"Trainable parameters: {trainable_params}, Trainable%: {trainable_params / total_params * 100:.2f}%")
 
     # Load checkpoint if needed
     if config.resume_from_checkpoint:
@@ -102,15 +100,11 @@ def train(
     # Load dataset
     train_dataset = get_dataset(config=config, split="train", collate_fn=None)
     train_dataloader = train_dataset.get_dataloader()
-    logger.info(
-        f"Loaded {config.dataset_id} dataset. Train dataset size: {len(train_dataloader)*config.batch_size}"
-    )
+    logger.info(f"Loaded {config.dataset_id} dataset. Train dataset size: {len(train_dataloader)*config.batch_size}")
 
     eval_dataset = get_dataset(config=config, split="test", collate_fn=None)
     eval_dataloader = eval_dataset.get_dataloader()
-    logger.info(
-        f"Loaded {config.dataset_id} dataset. Eval dataset size: {len(eval_dataloader)*config.batch_size}"
-    )
+    logger.info(f"Loaded {config.dataset_id} dataset. Eval dataset size: {len(eval_dataloader)*config.batch_size}")
 
     # Init training components (optimizer, lr scheduler, etc.)
     optimizer = torch.optim.AdamW(model.parameters(), lr=config.learning_rate)
@@ -147,11 +141,7 @@ def train(
                 do_validation = global_step % config.val_steps_freq == 0
 
                 if global_step % config.steps_freq == 0:
-                    avg_loss = (
-                        running_loss / config.steps_freq
-                        if global_step > 0
-                        else running_loss
-                    )
+                    avg_loss = running_loss / config.steps_freq if global_step > 0 else running_loss
                     logger.log_metrics(
                         {"train/loss": avg_loss},
                         commit=not do_validation,
@@ -177,9 +167,7 @@ def train(
                     )
 
                 if checkpoint_manager.should_save_checkpoint(global_step):
-                    checkpoint_manager.save_checkpoint(
-                        model, global_step, epoch, optimizer
-                    )
+                    checkpoint_manager.save_checkpoint(model, global_step, epoch, optimizer)
 
                 global_step += 1
 
@@ -187,12 +175,8 @@ def train(
                 checkpoint_manager.save_checkpoint(model, global_step, epoch, optimizer)
 
         # Save final model
-        final_model_path = checkpoint_manager.save_checkpoint(
-            model, global_step, epoch, optimizer
-        )
-        logger.log_artifact(
-            final_model_path, artifact_type="model", name="final_model.pth"
-        )
+        final_model_path = checkpoint_manager.save_checkpoint(model, global_step, epoch, optimizer)
+        logger.log_artifact(final_model_path, artifact_type="model", name="final_model.pth")
 
     except Exception as e:
         traceback_str = traceback.format_exc()
