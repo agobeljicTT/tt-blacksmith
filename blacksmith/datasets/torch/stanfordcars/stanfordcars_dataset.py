@@ -1,17 +1,14 @@
 # SPDX-FileCopyrightText: (c) 2026 Tenstorrent AI ULC
 #
 # SPDX-License-Identifier: Apache-2.0
-from datasets import load_dataset
-
 import torch
 from torch.utils.data import DataLoader
-
 from torchvision import transforms
-
 from transformers import ViTImageProcessor
 
 from blacksmith.datasets.torch.torch_dataset import BaseDataset
 from blacksmith.tools.templates.configs import TrainingConfig
+from datasets import load_dataset
 
 # Constants for ImageNet
 
