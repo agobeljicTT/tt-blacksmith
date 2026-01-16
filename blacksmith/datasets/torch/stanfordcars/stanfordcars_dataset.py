@@ -71,7 +71,7 @@ class StanfordCarsDataset(BaseDataset):
         transform_function = self._get_transform_function()
         raw_dataset = load_dataset(DATASET_PATH, split=self.split)
 
-        self.dataset = raw_dataset.with_transform(transform_function)
+        self.dataset = raw_dataset.with_transform(transform_function).shuffle(seed=self.config.seed)
 
     def __getitem__(self, idx: int):
         return self.dataset[idx]
