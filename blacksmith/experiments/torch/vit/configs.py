@@ -18,7 +18,7 @@ class TrainingConfig(BaseModel):
     ignored_index: int = Field(default=-100)
 
     # Training hyperparameters
-    learning_rate: float = Field(default=6e-5, gt=0)
+    learning_rate: float = Field(default=2e-3, gt=0)
     batch_size: int = Field(default=8, gt=0)
     gradient_checkpointing: bool = Field(default=False)
     num_epochs: int = Field(default=1, gt=0)
@@ -63,7 +63,7 @@ class TrainingConfig(BaseModel):
 
     # Device settings
     parallelism_strategy: str = Field(default="single")  # [single, data_parallel, tensor_parallel]
-    mesh_shape: str = Field(default="8,1")  # Used if parallelism_strategy != single
+    mesh_shape: str = Field(default="1,2")  # Used if parallelism_strategy != single
     tp_sharding_specs: dict[str, list[Optional[int]]] = Field(default_factory=dict)  # Used for model tp sharding
 
     # LoRA setup

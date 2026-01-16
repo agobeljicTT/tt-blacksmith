@@ -27,8 +27,6 @@ def validate(model, val_data_loader, loss_fn, device_manager, config, logger):
     num_val_batches = 0
     correct = 0
     total_samples = 0
-    collected_examples = []
-    max_examples = 10
 
     with torch.no_grad():
         for batch in tqdm(val_data_loader, desc="Validation"):
@@ -55,7 +53,7 @@ def validate(model, val_data_loader, loss_fn, device_manager, config, logger):
     accuracy = correct / total_samples if total_samples > 0 else 0.0
     accuracy = accuracy * 100
     logger.info(f"Average validation loss: {avg_val_loss}, Accuracy: {accuracy:.2f}%")
-    return avg_val_loss
+    return avg_val_loss, accuracy
 
 
 def train(
@@ -72,8 +70,6 @@ def train(
         num_labels=config.num_classes,
         ignore_mismatched_sizes=True,
     )
-    # figure out if needed
-    image_processor = AutoImageProcessor.from_pretrained(config.model_name)
 
     lora_config = LoraConfig(
         r=config.lora_r,
@@ -128,6 +124,11 @@ def train(
                     batch["label"],
                 )
                 running_loss += loss.item()
+                predictions = logits.argmax(dim=-1)
+                correct = (predictions == batch["label"]).sum().item()
+                total_samples = batch["image"].size(0)
+                accuracy = correct / total_samples if total_samples > 0 else 0.0
+                accuracy = accuracy * 100
 
                 # Backward pass
                 loss.backward()
@@ -142,7 +143,7 @@ def train(
                 if global_step % config.steps_freq == 0:
                     avg_loss = running_loss / config.steps_freq if global_step > 0 else running_loss
                     logger.log_metrics(
-                        {"train/loss": avg_loss},
+                        {"train/loss": avg_loss, "train/accuracy": accuracy},
                         commit=not do_validation,
                         step=global_step,
                     )
@@ -150,7 +151,7 @@ def train(
 
                 # Validation phase
                 if do_validation:
-                    avg_val_loss = validate(
+                    avg_val_loss, accuracy = validate(
                         model,
                         eval_dataloader,
                         loss_fn,
@@ -161,7 +162,7 @@ def train(
                     model.train()
 
                     logger.log_metrics(
-                        {"epoch": epoch + 1, "val/loss": avg_val_loss},
+                        {"epoch": epoch + 1, "val/loss": avg_val_loss, "val/accuracy": accuracy},
                         step=global_step,
                     )
 
