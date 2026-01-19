@@ -1,9 +1,6 @@
 # SPDX-FileCopyrightText: (c) 2025 Tenstorrent AI ULC
 #
 # SPDX-License-Identifier: Apache-2.0
-
-from typing import overload
-
 import torch
 import torchvision
 from torch.nn import functional as F
@@ -59,7 +56,6 @@ class MNISTDataset(BaseDataset):
     def __len__(self):
         return len(self.dataset)
 
-    @overload
     def _get_dataloader(self) -> DataLoader:
         return DataLoader(
             self.dataset, batch_size=self.config.batch_size, shuffle=self.split == "train", drop_last=True
