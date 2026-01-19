@@ -1,8 +1,6 @@
 # SPDX-FileCopyrightText: (c) 2026 Tenstorrent AI ULC
 #
 # SPDX-License-Identifier: Apache-2.0
-from typing import overload
-
 import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
@@ -81,7 +79,6 @@ class StanfordCarsDataset(BaseDataset):
     def __len__(self):
         return len(self.dataset)
 
-    @overload
     def _get_dataloader(self) -> DataLoader:
         return DataLoader(
             self.dataset,
