@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 from string import Template
-from typing import Dict
+from typing import Dict, overload
 
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer, DataCollatorForSeq2Seq
@@ -88,7 +88,8 @@ class TextToSQLDataset(BaseDataset):
             "labels": sample["labels"],
         }
 
-    def get_dataloader(self) -> DataLoader:
+    @overload
+    def _get_dataloader(self) -> DataLoader:
         data_collator = DataCollatorForSeq2Seq(
             tokenizer=self.tokenizer, padding="max_length", max_length=self.config.max_length
         )
