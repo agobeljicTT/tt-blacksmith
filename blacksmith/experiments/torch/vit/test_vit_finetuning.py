@@ -103,8 +103,6 @@ def train(
 
     # Init training components (optimizer, lr scheduler, etc.)
     optimizer = torch.optim.AdamW(model.parameters(), lr=config.learning_rate)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5)
-
     loss_fn = eval(config.loss_fn)(ignore_index=config.ignored_index)
 
     global_step = 0
@@ -145,7 +143,7 @@ def train(
                 if global_step % config.steps_freq == 0:
                     avg_loss = running_loss / config.steps_freq if global_step > 0 else running_loss
                     logger.log_metrics(
-                        {"train/loss": avg_loss, "train/accuracy": accuracy, "train/lr": optimizer.param_groups[0]["lr"]},
+                        {"train/loss": avg_loss, "train/accuracy": accuracy},
                         commit=not do_validation,
                         step=global_step,
                     )
@@ -167,8 +165,6 @@ def train(
                         {"epoch": epoch + 1, "val/loss": avg_val_loss, "val/accuracy": accuracy},
                         step=global_step,
                     )
-
-                scheduler.step(avg_val_loss)
 
                 if checkpoint_manager.should_save_checkpoint(global_step):
                     checkpoint_manager.save_checkpoint(model, global_step, epoch, optimizer)
