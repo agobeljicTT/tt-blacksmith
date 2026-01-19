@@ -9,7 +9,7 @@ dtype: "torch.bfloat16"
 ignored_index: -100
 
 # Training hyperparameters
-learning_rate: 5e-3
+learning_rate: 1e-3
 batch_size: 10
 gradient_checkpointing: False
 num_epochs: 8
@@ -19,7 +19,7 @@ optim: "adamw_torch"
 log_level: "INFO"
 use_wandb: True
 wandb_project: "vit-finetuning"
-wandb_run_name: "tt-vit-stanfordcars-5e-3-lora-16-16-0.1-bs10"
+wandb_run_name: "tt-vit-stanfordcars-1e-3-lora-16-16-0.1-bs10"
 wandb_tags: ["test"]
 wandb_watch_mode: "all"
 wandb_log_freq: 1000
