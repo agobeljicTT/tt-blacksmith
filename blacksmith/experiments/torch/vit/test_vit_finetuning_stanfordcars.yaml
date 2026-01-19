@@ -19,7 +19,7 @@ optim: "adamw_torch"
 log_level: "INFO"
 use_wandb: True
 wandb_project: "vit-finetuning"
-wandb_run_name: "tt-vit-stanfordcars-1e-3-lora-16-16-0.1-bs8-plateau"
+wandb_run_name: "tt-vit-stanfordcars-1e-3-lora-16-16-0.1-bs8"
 wandb_tags: ["test"]
 wandb_watch_mode: "all"
 wandb_log_freq: 1000
