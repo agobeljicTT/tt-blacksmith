@@ -67,7 +67,8 @@ def train(
 
     # Convert model to specified dtype if configured
     if hasattr(config, "dtype") and config.dtype:
-        model = model.to(config.dtype)
+        dtype = eval(config.dtype)
+        model = model.to(dtype)
 
     model = model.to(device_manager.device)
 
