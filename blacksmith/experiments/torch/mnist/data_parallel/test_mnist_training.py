@@ -69,8 +69,8 @@ def train(
     if hasattr(config, "dtype") and config.dtype:
         dtype = eval(config.dtype)
         model = model.to(device=device_manager.device, dtype=dtype)
-
-    model = model.to(device_manager.device)
+    else:
+        model = model.to(device_manager.device)
 
     logger.info(f"Loaded {config.model_name} model.")
     logger.info(f"Model parameters: {sum(p.numel() for p in model.parameters())}")
