@@ -66,11 +66,8 @@ def train(
     model = MNISTLinear(config.input_size, config.hidden_size, config.output_size, bias=config.bias)
 
     # Convert model to specified dtype if configured
-    if hasattr(config, "dtype") and config.dtype:
-        dtype = eval(config.dtype)
-        model = model.to(device=device_manager.device, dtype=dtype)
-    else:
-        model = model.to(device_manager.device)
+    dtype = eval(config.dtype) if hasattr(config, "dtype") and config.dtype else torch.float32
+    model = model.to(device=device_manager.device, dtype=dtype)
 
     logger.info(f"Loaded {config.model_name} model.")
     logger.info(f"Model parameters: {sum(p.numel() for p in model.parameters())}")
