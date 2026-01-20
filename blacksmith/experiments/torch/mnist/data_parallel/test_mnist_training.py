@@ -64,7 +64,14 @@ def train(
 
     # Load model
     model = MNISTLinear(config.input_size, config.hidden_size, config.output_size, bias=config.bias)
+
+    # Convert model to specified dtype if configured
+    if hasattr(config, "dtype") and config.dtype:
+        dtype = eval(config.dtype)
+        model = model.to(dtype)
+
     model = model.to(device_manager.device)
+
     logger.info(f"Loaded {config.model_name} model.")
     logger.info(f"Model parameters: {sum(p.numel() for p in model.parameters())}")
     logger.info(f"Trainable parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
