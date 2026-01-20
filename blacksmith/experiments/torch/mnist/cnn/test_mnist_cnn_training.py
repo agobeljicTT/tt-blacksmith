@@ -73,7 +73,7 @@ def train(
     # Convert model to specified dtype if configured
     if hasattr(config, "dtype") and config.dtype:
         dtype = eval(config.dtype)
-        model = model.to(dtype=dtype)
+        model = model.to(device=device_manager.device, dtype=dtype)
     model = model.to(device_manager.device)
 
     logger.info(f"Loaded {config.model_name} model.")
