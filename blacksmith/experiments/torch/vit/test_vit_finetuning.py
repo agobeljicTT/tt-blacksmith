@@ -88,9 +88,13 @@ def train(
     total_params = sum(p.numel() for p in model.parameters())
     logger.info(f"Trainable parameters: {trainable_params}, Trainable%: {trainable_params / total_params * 100:.2f}%")
 
+    # Init training components (optimizer, lr scheduler, etc.)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=config.learning_rate)
+    loss_fn = eval(config.loss_fn)(ignore_index=config.ignored_index)
+    
     # Load checkpoint if needed
     if config.resume_from_checkpoint:
-        checkpoint_manager.load_checkpoint()
+        checkpoint_manager.load_checkpoint(model, optimizer)
 
     # Load dataset
     train_dataset = get_dataset(config=config, split="train", collate_fn=None)
@@ -100,10 +104,6 @@ def train(
     eval_dataset = get_dataset(config=config, split="test", collate_fn=None)
     eval_dataloader = eval_dataset.get_dataloader()
     logger.info(f"Loaded {config.dataset_id} dataset. Eval dataset size: {len(eval_dataloader)*config.batch_size}")
-
-    # Init training components (optimizer, lr scheduler, etc.)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=config.learning_rate)
-    loss_fn = eval(config.loss_fn)(ignore_index=config.ignored_index)
 
     global_step = 0
     running_loss = 0.0
