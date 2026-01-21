@@ -4,7 +4,6 @@ num_classes: 196
 
 # Model settings
 model_name: "google/vit-base-patch16-224"
-max_length: 32
 dtype: "torch.bfloat16"
 ignored_index: -100
 

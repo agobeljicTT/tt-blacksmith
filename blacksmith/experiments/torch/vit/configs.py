@@ -15,13 +15,12 @@ class TrainingConfig(BaseModel):
 
     # Model settings
     model_name: str = Field(default="google/vit-base-patch16-224")
-    max_length: int = Field(default=32, gt=0)
     dtype: str = Field(default="torch.bfloat16")
     ignored_index: int = Field(default=-100)
 
     # Training hyperparameters
-    learning_rate: float = Field(default=2e-3, gt=0)
-    batch_size: int = Field(default=8, gt=0)
+    learning_rate: float = Field(default=1e-3, gt=0)
+    batch_size: int = Field(default=10, gt=0)
     gradient_checkpointing: bool = Field(default=False)
     num_epochs: int = Field(default=1, gt=0)
     optim: str = Field(default="adamw_torch")
