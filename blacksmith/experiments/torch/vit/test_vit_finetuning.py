@@ -8,7 +8,7 @@ import torch
 import torch_xla
 from peft import LoraConfig, get_peft_model
 from tqdm import tqdm
-from transformers import AutoImageProcessor, AutoModelForImageClassification
+from transformers import AutoModelForImageClassification
 
 from blacksmith.datasets.torch.dataset_utils import get_dataset
 from blacksmith.experiments.torch.vit.configs import TrainingConfig
@@ -86,12 +86,14 @@ def train(
     logger.info(f"Model parameters: {sum(p.numel() for p in model.parameters())}")
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     total_params = sum(p.numel() for p in model.parameters())
-    logger.info(f"Trainable parameters: {trainable_params}, Trainable%: {trainable_params / total_params * 100:.2f}%")
+    logger.info(
+        f"Trainable parameters: {trainable_params}, Trainable%: {trainable_params / total_params * 100:.2f}%"
+    )
 
     # Init training components (optimizer, lr scheduler, etc.)
     optimizer = torch.optim.AdamW(model.parameters(), lr=config.learning_rate)
     loss_fn = eval(config.loss_fn)(ignore_index=config.ignored_index)
-    
+
     # Load checkpoint if needed
     if config.resume_from_checkpoint:
         checkpoint_manager.load_checkpoint(model, optimizer)
@@ -99,11 +101,15 @@ def train(
     # Load dataset
     train_dataset = get_dataset(config=config, split="train", collate_fn=None)
     train_dataloader = train_dataset.get_dataloader()
-    logger.info(f"Loaded {config.dataset_id} dataset. Train dataset size: {len(train_dataloader)*config.batch_size}")
+    logger.info(
+        f"Loaded {config.dataset_id} dataset. Train dataset size: {len(train_dataloader)*config.batch_size}"
+    )
 
     eval_dataset = get_dataset(config=config, split="test", collate_fn=None)
     eval_dataloader = eval_dataset.get_dataloader()
-    logger.info(f"Loaded {config.dataset_id} dataset. Eval dataset size: {len(eval_dataloader)*config.batch_size}")
+    logger.info(
+        f"Loaded {config.dataset_id} dataset. Eval dataset size: {len(eval_dataloader)*config.batch_size}"
+    )
 
     global_step = 0
     running_loss = 0.0
@@ -141,7 +147,11 @@ def train(
                 do_validation = global_step % config.val_steps_freq == 0
 
                 if global_step % config.steps_freq == 0:
-                    avg_loss = running_loss / config.steps_freq if global_step > 0 else running_loss
+                    avg_loss = (
+                        running_loss / config.steps_freq
+                        if global_step > 0
+                        else running_loss
+                    )
                     logger.log_metrics(
                         {"train/loss": avg_loss, "train/accuracy": accuracy},
                         commit=not do_validation,
@@ -162,12 +172,18 @@ def train(
                     model.train()
 
                     logger.log_metrics(
-                        {"epoch": epoch + 1, "val/loss": avg_val_loss, "val/accuracy": accuracy},
+                        {
+                            "epoch": epoch + 1,
+                            "val/loss": avg_val_loss,
+                            "val/accuracy": accuracy,
+                        },
                         step=global_step,
                     )
 
                 if checkpoint_manager.should_save_checkpoint(global_step):
-                    checkpoint_manager.save_checkpoint(model, global_step, epoch, optimizer)
+                    checkpoint_manager.save_checkpoint(
+                        model, global_step, epoch, optimizer
+                    )
 
                 global_step += 1
 
@@ -175,8 +191,12 @@ def train(
                 checkpoint_manager.save_checkpoint(model, global_step, epoch, optimizer)
 
         # Save final model
-        final_model_path = checkpoint_manager.save_checkpoint(model, global_step, epoch, optimizer)
-        logger.log_artifact(final_model_path, artifact_type="model", name="final_model.pth")
+        final_model_path = checkpoint_manager.save_checkpoint(
+            model, global_step, epoch, optimizer
+        )
+        logger.log_artifact(
+            final_model_path, artifact_type="model", name="final_model.pth"
+        )
 
     except Exception as e:
         traceback_str = traceback.format_exc()
@@ -190,7 +210,9 @@ if __name__ == "__main__":
     # Config setup
     default_config = Path(__file__).parent / "test_vit_finetuning_stanfordcars.yaml"
     args = parse_cli_options(default_config=default_config)
-    config: TrainingConfig = generate_config(TrainingConfig, args.config, args.test_config)
+    config: TrainingConfig = generate_config(
+        TrainingConfig, args.config, args.test_config
+    )
 
     # Reproducibility setup
     repro_manager = ReproducibilityManager(config)
