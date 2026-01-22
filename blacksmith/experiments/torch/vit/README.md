@@ -32,11 +32,11 @@ Source: [Hugging Face Dataset Hub](https://huggingface.co/datasets/tanganke/stan
 | `num_classes` | Number of classes for the desired dataset. | 196 |
 | `model_name` | Name or path of the pre-trained ViT model. | "google/vit-base-patch16-224" |
 | `dtype` | Data type used during training. | "torch.bfloat16" |
+| `ignored_index` | Index to ignore in loss calculation. | -100 |
 | `learning_rate` | Learning rate for the optimizer. | 1e-3 |
 | `batch_size` | Number of samples per training batch. | 10 |
-| `gradient_checkpointing` | Whether to use gradient checkpointing to save memory. | False |
-| `num_epochs` | Total number of training epochs. | 1 |
-| `optim` | Optimizer to use for training. | "adamw_torch" |
+| `num_epochs` | Total number of training epochs. | 8 |
+| `loss_fn` | Loss function to use. | "torch.nn.CrossEntropyLoss" |
 | `log_level` | Logging verbosity level. | "INFO" |
 | `use_wandb` | Whether to enable Weights & Biases logging. | True |
 | `wandb_project` | Project name for Weights & Biases logging. | "vit-finetuning" |
@@ -64,15 +64,12 @@ Source: [Hugging Face Dataset Hub](https://huggingface.co/datasets/tanganke/stan
 | `remote_path` | Remote storage path (if applicable). | "" |
 | `seed` | Random seed for reproducibility. | 23 |
 | `deterministic` | Whether to enforce deterministic behavior. | False |
+| `parallelism_strategy` | Parallelism strategy (`single`, `data_parallel`, or `tensor_parallel`). | "single" |
+| `mesh_shape` | Mesh shape for parallelism (used if `parallelism_strategy != single`). | "1,2" |
+| `tp_sharding_specs` | Tensor parallel sharding specifications. | {} |
 | `lora_r` | Rank of LoRA adaptation matrices. | 4 |
 | `lora_alpha` | Scaling factor for LoRA updates. | 8 |
 | `lora_target_modules` | Target modules for LoRA adaptation. | ["all-linear"] |
 | `lora_dropout` | Dropout probability for LoRA layers. | 0.1 |
 | `framework` | Training framework. | "pytorch" |
-| `ignored_index` | Index to ignore in loss calculation. | -100 |
-| `loss_fn` | Loss function to use. | "torch.nn.CrossEntropyLoss" |
-| `print_examples` | Whether to print example data during training. | True |
-| `parallelism_strategy` | Parallelism strategy (`single`, `data_parallel`, or `tensor_parallel`). | "single" |
-| `mesh_shape` | Mesh shape for parallelism (used if `parallelism_strategy != single`). | "1,2" |
-| `tp_sharding_specs` | Tensor parallel sharding specifications. | {} |
 | `use_tt` | Whether to run on TT device (or GPU otherwise). | False |

@@ -21,9 +21,7 @@ class TrainingConfig(BaseModel):
     # Training hyperparameters
     learning_rate: float = Field(default=1e-3, gt=0)
     batch_size: int = Field(default=10, gt=0)
-    gradient_checkpointing: bool = Field(default=False)
-    num_epochs: int = Field(default=1, gt=0)
-    optim: str = Field(default="adamw_torch")
+    num_epochs: int = Field(default=8, gt=0)
 
     # Loss
     loss_fn: str = Field(default="torch.nn.CrossEntropyLoss")
@@ -40,7 +38,6 @@ class TrainingConfig(BaseModel):
     steps_freq: int = Field(default=10)
     epoch_freq: int = Field(default=1)
     val_steps_freq: int = Field(default=50)
-    print_examples: bool = Field(default=True)
 
     # Checkpoint settings
     resume_from_checkpoint: bool = Field(default=False)
