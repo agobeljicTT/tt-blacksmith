@@ -1,6 +1,5 @@
 # Dataset settings
 dataset_id: "stanfordcars"
-num_classes: 196
 
 # Model settings
 model_name: "google/vit-base-patch16-224"

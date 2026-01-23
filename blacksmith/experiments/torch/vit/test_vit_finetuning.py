@@ -62,11 +62,21 @@ def train(
     checkpoint_manager: CheckpointManager,
 ):
     logger.info("Starting training...")
+    
+    # Load dataset
+    train_dataset = get_dataset(config=config, split="train")
+    train_dataloader = train_dataset.get_dataloader()
+    logger.info(f"Loaded {config.dataset_id} dataset. Train dataset size: {len(train_dataloader)*config.batch_size}")
+
+    eval_dataset = get_dataset(config=config, split="test")
+    eval_dataloader = eval_dataset.get_dataloader()
+    logger.info(f"Loaded {config.dataset_id} dataset. Eval dataset size: {len(eval_dataloader)*config.batch_size}")
 
     # Load model
+    # TODO(agobeljicTT): Use get_model function from models/torch/huggingface/hf_models.py. (https://github.com/tenstorrent/tt-blacksmith/issues/403)
     model = AutoModelForImageClassification.from_pretrained(
         config.model_name,
-        num_labels=config.num_classes,
+        num_labels=train_dataset.num_classes,
         ignore_mismatched_sizes=True,
     )
 
@@ -94,15 +104,6 @@ def train(
     # Load checkpoint if needed
     if config.resume_from_checkpoint:
         checkpoint_manager.load_checkpoint(model, optimizer)
-
-    # Load dataset
-    train_dataset = get_dataset(config=config, split="train")
-    train_dataloader = train_dataset.get_dataloader()
-    logger.info(f"Loaded {config.dataset_id} dataset. Train dataset size: {len(train_dataloader)*config.batch_size}")
-
-    eval_dataset = get_dataset(config=config, split="test")
-    eval_dataloader = eval_dataset.get_dataloader()
-    logger.info(f"Loaded {config.dataset_id} dataset. Eval dataset size: {len(eval_dataloader)*config.batch_size}")
 
     global_step = 0
     running_loss = 0.0

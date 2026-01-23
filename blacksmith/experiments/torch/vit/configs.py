@@ -11,7 +11,9 @@ from blacksmith.tools.test_config import TestConfig
 class TrainingConfig(BaseModel):
     # Dataset settings
     dataset_id: str = Field(default="stanfordcars")
-    num_classes: int = Field(default=196, gt=0)
+    image_size: int = Field(default=224, gt=0)
+    image_mean: list[float] = Field(default=[0.5, 0.5, 0.5])
+    image_std: list[float] = Field(default=[0.5, 0.5, 0.5])
 
     # Model settings
     model_name: str = Field(default="google/vit-base-patch16-224")

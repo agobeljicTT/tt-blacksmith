@@ -4,7 +4,6 @@
 import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
-from transformers import ViTImageProcessor
 
 from blacksmith.datasets.torch.torch_dataset import BaseDataset
 from blacksmith.tools.templates.configs import TrainingConfig
@@ -21,7 +20,7 @@ class StanfordCarsDataset(BaseDataset):
             split: Dataset split to use
         """
         self.dtype = eval(config.dtype)
-        self.image_processor = ViTImageProcessor.from_pretrained(config.model_name)
+        self.num_classes = 196
 
         super().__init__(config, split)
 
@@ -30,12 +29,12 @@ class StanfordCarsDataset(BaseDataset):
             [
                 # Dataset contains grayscale images.
                 transforms.Lambda(lambda img: img.convert("RGB") if img.mode != "RGB" else img),
-                transforms.RandomResizedCrop(self.image_processor.size["height"]),
+                transforms.RandomResizedCrop(self.config.image_size),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.Normalize(
-                    mean=self.image_processor.image_mean,
-                    std=self.image_processor.image_std,
+                    mean=self.config.image_mean,
+                    std=self.config.image_std,
                 ),
                 transforms.Lambda(lambda x: x.to(self.dtype)),
             ]
