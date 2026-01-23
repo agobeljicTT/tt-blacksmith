@@ -42,7 +42,7 @@ def get_dataset(config: TrainingConfig, split: str = "train", collate_fn=None):
     elif dataset_id == AvailableDataset.SQUADV2.value:
         return SquadV2Dataset(config, split, collate_fn=collate_fn)
     elif dataset_id == AvailableDataset.STANFORDCARS.value:
-        return StanfordCarsDataset(config, split, collate_fn=collate_fn)
+        return StanfordCarsDataset(config, split)
     else:
         available_datasets = [ds.value for ds in AvailableDataset]
         raise ValueError(f"Unsupported dataset: {dataset_id}. Available options are: {available_datasets}")

@@ -17,7 +17,6 @@ from blacksmith.tools.cli import generate_config, parse_cli_options
 from blacksmith.tools.device_manager import DeviceManager
 from blacksmith.tools.logging_manager import TrainingLogger
 from blacksmith.tools.reproducibility_manager import ReproducibilityManager
-from blacksmith.tools.torch_helpers import collect_examples, show_examples
 
 
 def validate(model, val_data_loader, loss_fn, device_manager, config, logger):
@@ -97,11 +96,11 @@ def train(
         checkpoint_manager.load_checkpoint(model, optimizer)
 
     # Load dataset
-    train_dataset = get_dataset(config=config, split="train", collate_fn=None)
+    train_dataset = get_dataset(config=config, split="train")
     train_dataloader = train_dataset.get_dataloader()
     logger.info(f"Loaded {config.dataset_id} dataset. Train dataset size: {len(train_dataloader)*config.batch_size}")
 
-    eval_dataset = get_dataset(config=config, split="test", collate_fn=None)
+    eval_dataset = get_dataset(config=config, split="test")
     eval_dataloader = eval_dataset.get_dataloader()
     logger.info(f"Loaded {config.dataset_id} dataset. Eval dataset size: {len(eval_dataloader)*config.batch_size}")
 
@@ -188,7 +187,7 @@ def train(
 
 if __name__ == "__main__":
     # Config setup
-    default_config = Path(__file__).parent / "test_vit_finetuning_stanfordcars.yaml"
+    default_config = Path(__file__).parent / "test_vit_stanfordcars.yaml"
     args = parse_cli_options(default_config=default_config)
     config: TrainingConfig = generate_config(TrainingConfig, args.config, args.test_config)
 

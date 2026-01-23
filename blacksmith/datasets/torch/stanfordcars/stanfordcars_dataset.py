@@ -32,9 +32,7 @@ class StanfordCarsDataset(BaseDataset):
         img_transform = transforms.Compose(
             [
                 # Dataset contains grayscale images.
-                transforms.Lambda(
-                    lambda img: img.convert("RGB") if img.mode != "RGB" else img
-                ),
+                transforms.Lambda(lambda img: img.convert("RGB") if img.mode != "RGB" else img),
                 transforms.RandomResizedCrop(self.image_processor.size["height"]),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
@@ -53,7 +51,7 @@ class StanfordCarsDataset(BaseDataset):
 
         return lambda batch: {
             "image": [img_transform(img) for img in batch["image"]],
-            "label": [label_transform(label) for label in batch["label"]]
+            "label": [label_transform(label) for label in batch["label"]],
         }
 
     def _prepare_dataset(self):
