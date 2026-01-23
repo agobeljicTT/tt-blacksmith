@@ -62,7 +62,7 @@ def train(
     checkpoint_manager: CheckpointManager,
 ):
     logger.info("Starting training...")
-    
+
     # Load dataset
     train_dataset = get_dataset(config=config, split="train")
     train_dataloader = train_dataset.get_dataloader()
