@@ -20,13 +20,10 @@ class StanfordCarsDataset(BaseDataset):
             config: TrainingConfig (ensure config.dataset_id is set to "stanfordcars")
             split: Dataset split to use
         """
-
-        self.config = config
-        self.split = split
-        self.dtype = eval(self.config.dtype)
+        self.dtype = eval(config.dtype)
         self.image_processor = ViTImageProcessor.from_pretrained(config.model_name)
 
-        self._prepare_dataset()
+        super().__init__(config, split)
 
     def _get_transform_function(self):
         img_transform = transforms.Compose(
