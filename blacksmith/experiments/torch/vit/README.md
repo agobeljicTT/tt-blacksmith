@@ -29,9 +29,9 @@ Source: [Hugging Face Dataset Hub](https://huggingface.co/datasets/tanganke/stan
 | Parameter | Description | Default Value |
 | --- | --- | --- |
 | `dataset_id` | The dataset used for fine-tuning. | "stanfordcars" |
-| `image_size` | Size of the image after preprocessing. | 224 |
-| `image_mean` | The mean used for RGB channels of the image. | [0.5, 0.5, 0.5] |
-| `image_std` | The std used for RGB channels of the image. | [0.5, 0.5, 0.5] |
+| `image_size` | Size of the image after preprocessing. (Unconfigurable for ViT experiment) | 224 |
+| `image_mean` | The mean used for RGB channels of the image. (Unconfigurable for ViT experiment) | [0.5, 0.5, 0.5] |
+| `image_std` | The std used for RGB channels of the image. (Unconfigurable for ViT experiment) | [0.5, 0.5, 0.5] |
 | `model_name` | Name or path of the pre-trained ViT model. | "google/vit-base-patch16-224" |
 | `dtype` | Data type used during training. | "torch.bfloat16" |
 | `ignored_index` | Index to ignore in loss calculation. | -100 |

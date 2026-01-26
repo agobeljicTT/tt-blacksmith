@@ -8,7 +8,7 @@ import torch
 import torch_xla
 from peft import LoraConfig, get_peft_model
 from tqdm import tqdm
-from transformers import AutoModelForImageClassification
+from transformers import AutoModelForImageClassification, ViTImageProcessor
 
 from blacksmith.datasets.torch.dataset_utils import get_dataset
 from blacksmith.experiments.torch.vit.configs import TrainingConfig
@@ -62,6 +62,12 @@ def train(
     checkpoint_manager: CheckpointManager,
 ):
     logger.info("Starting training...")
+
+    # Load the image processor.
+    image_processor = ViTImageProcessor.from_pretrained(config.model_name)
+    config.image_mean = image_processor.image_mean
+    config.image_std = image_processor.image_std
+    config.image_size = image_processor.size["height"]
 
     # Load the training and evaluation datasets.
     train_dataset = get_dataset(config=config, split="train")
